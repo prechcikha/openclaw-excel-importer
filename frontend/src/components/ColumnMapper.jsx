@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { saveMapping } from '../api';
 
 const ColumnMapper = () => {
   const { filename } = useParams();
@@ -46,7 +47,7 @@ const ColumnMapper = () => {
     ));
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     // Validate mappings
     let hasValidMapping = false;
     mappings.forEach(m => {
@@ -60,11 +61,37 @@ const ColumnMapper = () => {
       return;
     }
 
-    // Save mapping configuration (would call API here)
+    // Extract import_id from filename (format: job_TIMESTAMP_filename)
+    const parts = filename.split('_');
+    const importId = parts.length > 2 ? parts[parts.length - 2] : null; // Use timestamp as import_id
     
-    navigate('/import/' + filename, { 
-      state: { mappings, total_rows, preview } 
-    });
+    if (!importId) {
+      alert('Could not extract import ID from filename. Please re-upload the file.');
+      return;
+    }
+
+    try {
+      const mappingData = mappings.map(m => ({
+        excel_column: m.excel_column,
+        target_field: m.target_column || '',
+        skip: m.skip
+      }));
+
+      // Save mapping to backend
+      const response = await saveMapping(importId, { mappings: mappingData });
+      
+      if (response.success) {
+        console.log('Mappings saved successfully');
+        navigate('/import/' + filename, { 
+          state: { mappings, total_rows, preview, import_id: importId }
+        });
+      } else {
+        alert('Failed to save column mappings: ' + (response.error || response.message));
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error saving mappings: ' + (error.response?.data?.message || error.message));
+    }
   };
 
   const renderMappingRow = (mapping, index) => (
