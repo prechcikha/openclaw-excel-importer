@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { uploadFile } from '../api';
 
 const FileUpload = () => {
   const [file, setFile] = useState(null);
@@ -11,13 +12,14 @@ const FileUpload = () => {
   const [result, setResult] = useState(null);
   const navigate = useNavigate();
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
 
-    // Validate file size (max 5MB)
-    if (selectedFile.size > 5 * 1024 * 1024) {
-      alert('File size exceeds 5MB limit');
+    // Validate file size (max 50MB to match backend)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (selectedFile.size > maxSize) {
+      alert(`File size exceeds ${maxSize / 1024 / 1024}MB limit`);
       return;
     }
 
@@ -25,7 +27,7 @@ const FileUpload = () => {
     setFileName(selectedFile.name);
     
     // Upload file and get column info
-    uploadAndParse();
+    await uploadAndParse();
   };
 
   const uploadAndParse = async () => {
@@ -34,37 +36,39 @@ const FileUpload = () => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post('http://localhost:8000/api/upload/file', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      // For now, use connection_id 1 (test connection) - will be improved with connection selector
+      const response = await uploadFile(file, 1);
 
-      if (response.data.success) {
-        setColumns(response.data.columns);
-        setResult({ success: true, filename: response.data.filename, total_rows: response.data.total_rows });
+      if (response.success) {
+        setColumns(response.data.column_names);
+        setResult({ 
+          success: true, 
+          filename: response.data.file_name,
+          total_rows: response.data.rows_count,
+          columns_count: response.data.columns_count,
+          message: 'File uploaded and parsed successfully'
+        });
         
-        // Auto-preview first 10 rows
-        await previewData(10);
+        // Auto-preview first 3 rows
+        await previewData(3);
       } else {
-        alert('Upload failed');
+        alert('Upload failed: ' + (response.error || response.message));
       }
     } catch (error) {
       console.error(error);
-      alert('File upload failed. Please try again.');
+      const errorMsg = error.response?.data?.message || error.message || 'File upload failed';
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  const previewData = async (limit = 10) => {
+  const previewData = async (limit = 3) => {
     try {
-      if (!file) return;
+      if (!file || !response) return;
       
-      const response = await axios.post('http://localhost:8000/api/upload/preview', {
-        filename,
-        rows_limit: limit
-      });
-
-      setPreview(response.data.rows);
+      // Use the response from upload which already contains sample_rows
+      setPreview(response.data.sample_rows || []);
     } catch (error) {
       console.error(error);
     }
