@@ -1,8 +1,83 @@
 const express = require('express');
 const multer = require('multer');
+const XLSX = require('xlsx');  // SheetJS for Excel parsing
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+
+// Helper function to parse CSV content
+function parseCSV(csvContent) {
+    const lines = csvContent.split('\n').filter(line => line.trim());
+    if (lines.length === 0) return { headers: [], rows: [] };
+    
+    // Parse headers (handle quoted fields with commas)
+    const parseLine = (line) => {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim().replace(/^"|"$/g, ''));
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        result.push(current.trim().replace(/^"|"$/g, ''));
+        return result;
+    };
+    
+    const headers = parseLine(lines[0]);
+    const rows = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const values = parseLine(lines[i]);
+        const row = {};
+        headers.forEach((header, idx) => {
+            row[header] = values[idx] !== undefined ? values[idx] : '';
+        });
+        rows.push(row);
+    }
+    
+    return { headers, rows };
+}
+
+// Helper function to parse Excel file buffer
+function parseExcel(fileBuffer) {
+    try {
+        const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+        
+        // Get the first sheet
+        const firstSheetName = workbook.SheetNames[0];
+        if (!firstSheetName) throw new Error('No sheets found in Excel file');
+        
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Convert to JSON (array of objects, with header row as keys)
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (!jsonData || jsonData.length === 0) {
+            return { headers: [], rows: [] };
+        }
+        
+        // Extract unique headers from first row
+        const headers = Object.keys(jsonData[0]);
+        
+        return { 
+            headers, 
+            rows: jsonData,
+            sheet_name: firstSheetName
+        };
+    } catch (error) {
+        console.error('Excel parsing error:', error.message);
+        throw new Error(`Failed to parse Excel file: ${error.message}`);
+    }
+}
 
 // Initialize database service
 let dbService;
@@ -110,18 +185,17 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         
         } else if (req.file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
                    req.file.mimetype === 'application/vnd.ms-excel') {
-            // Parse Excel file (would use SheetJS in production)
-            console.log('Excel file parsed: using mock data for demo');
+            // Parse Excel file using SheetJS (xlsx) library
+            console.log('Parsing Excel file with SheetJS...');
             
-            // For now, return mock parsed data
-            // In production, would use xlsx library: require('xlsx').read(req.file.buffer, {type: 'array'})
-            parsedData = {
-                headers: ['Column1', 'Column2', 'Column3'],
-                rows: [
-                    { Column1: 'Row1-Col1', Column2: 'Row1-Col2', Column3: 'Value' },
-                    { Column1: 'Row2-Col1', Column2: 'Row2-Col2', Column3: 'Value' }
-                ]
-            };
+            try {
+                parsedData = parseExcel(fs.readFileSync(req.file.path));
+                console.log(`Excel parsed: ${parsedData.headers.length} columns, ${parsedData.rows.length} rows`);
+                
+            } catch (error) {
+                console.error('Failed to parse Excel file:', error.message);
+                throw new Error(error.message);
+            }
         }
 
         // Save parsed data metadata to database
