@@ -4,6 +4,7 @@ import ConnectionConfig from './components/ConnectionConfig';
 import FileUpload from './components/FileUpload';
 import ColumnMapper from './components/ColumnMapper';
 import ImportProgress from './components/ImportProgress';
+import toast from './utils/toast';
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
           <Route path="/map/:filename" element={<ColumnMapper />} />
           <Route path="/import/:jobId" element={<ImportProgress />} />
         </Routes>
+        {/* Toast Notifications */}
+        {toast.render()}
       </div>
     </Router>
   );
