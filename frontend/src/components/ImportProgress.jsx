@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { executeImport, getImportStatus } from '../api';
 
 const ImportProgress = () => {
   const { jobId } = useParams();
@@ -18,16 +19,36 @@ const ImportProgress = () => {
   useEffect(() => {
     // Check if previous import exists for this job
     checkPreviousResult();
-  }, []);
+    
+    // Polling interval to check import status (every 2 seconds)
+    const pollInterval = setInterval(async () => {
+      if (loading) return;
+      try {
+        const response = await getImportStatus(filename);
+        setStatus(response.data);
+        
+        if (response.status === 'completed') {
+          // Show results page
+          navigate(`/import/${filename}/results`, { state: response });
+        } else if (response.status === 'failed') {
+          setStatus({ ...response, success: false });
+        }
+      } catch (error) {
+        console.log('Import not found or error:', error.message);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [loading, filename]);
 
   const checkPreviousResult = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/import/${jobId}/status`);
+      const response = await getImportStatus(filename);
       setStatus(response.data);
       
-      if (response.data.status === 'completed') {
+      if (response.status === 'completed') {
         // Show results page
-        navigate(`/import/${jobId}/results`, { state: response.data });
+        navigate(`/import/${filename}/results`, { state: response });
       }
     } catch (error) {
       console.log('No previous import found');
@@ -38,39 +59,55 @@ const ImportProgress = () => {
     setLoading(true);
     
     try {
+      // Extract import_id from filename (format: job_TIMESTAMP_filename)
+      const parts = filename.split('_');
+      const importId = parts.length > 2 ? parts[parts.length - 2] : null;
+      
+      if (!importId) {
+        alert('Could not extract import ID. Please re-upload the file.');
+        setLoading(false);
+        return;
+      }
+
       // Prepare mapping data for API
       const mappingData = mappings.map(m => ({
         excel_column: m.excel_column,
-        target_column: m.target_column || '',
+        target_field: m.target_column || '',
         skip: m.skip
       }));
 
-      const formData = new FormData();
-      formData.append('file', preview[0]?.blob); // In real app, you'd have the actual file
-      
-      await axios.post('http://localhost:8000/api/import/execute', {
-        job_id: jobId,
+      const config = {
+        import_id: importId,
         mode: mode,
-        mapping: mappingData,
-        match_key_column: matchKeyColumn,
-        'rows_limit': total_rows || 100
-      }, {
-        headers: { 
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+        mappings: mappingData,
+        rows_count: total_rows || preview.length
+      };
 
-      // Simulate progress (in real app, you'd use websockets or polling)
-      for (let i = 0; i <= 100; i += 10) {
-        setProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 500));
+      if (mode === 'update' && matchKeyColumn) {
+        config.match_key_column = matchKeyColumn;
       }
 
-      setStatus({ success: true });
-      
+      // Execute import via API
+      const response = await executeImport(importId, config);
+
+      if (response.success) {
+        setStatus({ 
+          success: true,
+          records_imported: response.data.records_imported || 0,
+          records_failed: response.data.records_failed || 0,
+          duration_ms: response.data.duration_ms || 0,
+          message: `Import completed! ${response.data.records_imported} rows imported.`
+        });
+      } else {
+        setStatus({ 
+          success: false, 
+          error: response.error || response.message || 'Import failed'
+        });
+      }
     } catch (error) {
       console.error(error);
-      setStatus({ success: false, error: error.message });
+      const errorMsg = error.response?.data?.message || error.message || 'Import execution failed';
+      setStatus({ success: false, error: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -219,7 +256,7 @@ const ImportProgress = () => {
   const renderResults = () => (
     <div className="card">
       <div className={`card-header ${status.success ? 'bg-success text-white' : 'bg-danger text-white'}`}>
-        {status.success ? 'Import Completed!' : 'Import Failed'}
+        {status.success ? `Import Completed!` : 'Import Failed'}
       </div>
       <div className="card-body">
         {status.success && (
@@ -230,8 +267,18 @@ const ImportProgress = () => {
               Successfully imported data to MSSQL database!
             </div>
 
-            <p><strong>Total rows processed:</strong> {total_rows}</p>
-            <p><strong>Rows inserted/updated:</strong> See database for exact count</p>
+            {status.records_imported !== undefined && (
+              <>
+                <p><strong>Total rows processed:</strong> {total_rows || preview.length}</p>
+                <p><strong>Rows successfully imported:</strong> {status.records_imported}</p>
+                {status.records_failed > 0 && (
+                  <p className="text-danger"><strong>Failed rows:</strong> {status.records_failed}</p>
+                )}
+                {status.duration_ms !== undefined && (
+                  <p><strong>Import duration:</strong> {(status.duration_ms / 1000).toFixed(2)} seconds</p>
+                )}
+              </>
+            )}
             
             <h6 className="mt-4">Next Steps:</h6>
             <ul>
@@ -245,7 +292,7 @@ const ImportProgress = () => {
 
         {!status.success && (
           <div className="alert alert-danger">
-            Import failed. Please check the error details and try again.
+            Import failed: {status.error || 'Unknown error'}
           </div>
         )}
       </div>
