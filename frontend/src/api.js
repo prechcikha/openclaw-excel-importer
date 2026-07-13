@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,11 +22,15 @@ export const getConfigureForm = async () => {
 };
 
 // File Upload
-export const uploadFile = async (file) => {
+export const uploadFile = async (file, connection_id) => {
   const formData = new FormData();
   formData.append('file', file);
   
-  const response = await api.post('/api/upload/file', formData, {
+  if (connection_id && connection_id !== 'null' && connection_id !== undefined) {
+    formData.append('connection_id', connection_id);
+  }
+  
+  const response = await api.post('/api/imports/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -45,8 +49,8 @@ export const previewData = async (filename, rowsLimit = 100) => {
 };
 
 // Column Mapping
-export const saveMapping = async (jobId, mappingData) => {
-  const response = await api.post('/api/mapping/save', { job_id: jobId, mapping: mappingData });
+export const saveMapping = async (import_id, mappingData) => {
+  const response = await api.post('/api/imports/mapping', { import_id, ...mappingData });
   return response.data;
 };
 
@@ -61,18 +65,21 @@ export const deleteMapping = async (jobId) => {
 };
 
 // Import Execution
-export const executeImport = async (jobId, config) => {
-  const response = await api.post('/api/import/execute', { job_id: jobId, config });
+export const executeImport = async (import_id, config) => {
+  const response = await api.post('/api/imports/execute', { import_id, ...config });
   return response.data;
 };
 
-export const getImportStatus = async (jobId) => {
-  const response = await api.get(`/api/import/${jobId}/status`);
+export const getImportStatus = async (import_id) => {
+  const response = await api.get(`/api/imports/${import_id}`);
   return response.data;
 };
 
-export const getImportResult = async (jobId) => {
-  const response = await api.post('/api/import/result', { job_id: jobId });
+// Import History
+export const getImportHistory = async (params = {}) => {
+  const url = new URL('/api/imports/history', API_BASE_URL);
+  Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+  const response = await api.get(url.toString());
   return response.data;
 };
 
