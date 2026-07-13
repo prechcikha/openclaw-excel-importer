@@ -232,12 +232,11 @@ class DBService {
         try {
             const query = `
                 INSERT INTO imports 
-                (id, connection_id, file_name, file_size, columns_count, rows_count, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (connection_id, file_name, file_size, columns_count, rows_count, upload_date, status)
+                VALUES (?, ?, ?, ?, ?, NOW(), ?)
             `;
 
             const [result] = await pool.query(query, [
-                data.id || Date.now().toString(),
                 data.connection_id,
                 data.file_name,
                 data.file_size || 0,
@@ -247,7 +246,7 @@ class DBService {
             ]);
 
             return {
-                id: result.insertId?.toString() || data.id,
+                id: result.insertId?.toString() || (data.id || Date.now().toString()),
                 connection_id: data.connection_id
             };
 
@@ -263,7 +262,7 @@ class DBService {
     async getImportById(importId) {
         try {
             const [rows] = await pool.query(
-                'SELECT * FROM imports WHERE id = ?',
+                'SELECT i.*, cm.target_field as mapping FROM imports i LEFT JOIN column_mappings cm ON i.id = cm.import_id WHERE i.id = ?',
                 [importId]
             );
 
@@ -283,9 +282,7 @@ class DBService {
             const { limit = 10, offset = 0, status } = params;
             
             let sql = `
-                SELECT i.*, u.original_name as file_original_name, u.mime_type
-                FROM imports i
-                LEFT JOIN uploads u ON i.file_name = u.filename
+                SELECT i.* FROM imports i
                 WHERE 1=1
             `;
             
@@ -343,14 +340,14 @@ class DBService {
             await pool.query('START TRANSACTION');
 
             // Clear existing mappings for this import (allow updates)
-            await pool.query('DELETE FROM import_mappings WHERE import_id = ?', [data.import_id]);
+            await pool.query('DELETE FROM column_mappings WHERE import_id = ?', [data.import_id]);
 
             // Insert new mappings
             const mappingPromises = Object.entries(data.mappings).map(async ([sourceColumn, targetField]) => {
                 if (!targetField) return null;
                 
                 await pool.query(
-                    'INSERT INTO import_mappings (import_id, source_column, target_field) VALUES (?, ?, ?)',
+                    'INSERT INTO column_mappings (import_id, excel_column, db_column, data_type) VALUES (?, ?, ?, "string")',
                     [data.import_id, sourceColumn, targetField.field || targetField]
                 );
             });
@@ -360,7 +357,7 @@ class DBService {
 
             // Count how many mappings were saved
             const [rows] = await pool.query(
-                'SELECT COUNT(*) as count FROM import_mappings WHERE import_id = ?',
+                'SELECT COUNT(*) as count FROM column_mappings WHERE import_id = ?',
                 [data.import_id]
             );
 
@@ -382,7 +379,7 @@ class DBService {
     async getMappingForImport(importId) {
         try {
             const [rows] = await pool.query(
-                'SELECT source_column, target_field, transformation FROM import_mappings WHERE import_id = ?',
+                'SELECT excel_column as source_column, db_column as target_field FROM column_mappings WHERE import_id = ?',
                 [importId]
             );
 
@@ -391,7 +388,7 @@ class DBService {
             rows.forEach(row => {
                 mappings[row.source_column] = {
                     field: row.target_field,
-                    transform: row.transformation
+                    transform: null  // No transformation for now
                 };
             });
 
