@@ -1,0 +1,127 @@
+ Image excel-importer-app Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 568B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 783B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/php:8.2-fpm
+#3 ...
+
+#4 [internal] load metadata for docker.io/library/composer:latest
+#4 DONE 0.2s
+
+#3 [internal] load metadata for docker.io/library/php:8.2-fpm
+#3 DONE 0.2s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 2B done
+#5 DONE 0.0s
+
+#6 [stage-0 1/7] FROM docker.io/library/php:8.2-fpm@sha256:0cb0ccc62ee5ee47909b52b74fe180c852439533a83dd7a01c8a65dc069e2591
+#6 resolve docker.io/library/php:8.2-fpm@sha256:0cb0ccc62ee5ee47909b52b74fe180c852439533a83dd7a01c8a65dc069e2591 0.0s done
+#6 DONE 0.0s
+
+#7 [stage-0 2/7] RUN apt-get update && apt-get install -y     unixodbc-dev     odbcinst     odbc-postgresql
+#7 CACHED
+
+#8 FROM docker.io/library/composer:latest@sha256:5946476338742b200bb9ff88f8be56275ddae4b3949c72305cb0dbf10cfcb760
+#8 resolve docker.io/library/composer:latest@sha256:5946476338742b200bb9ff88f8be56275ddae4b3949c72305cb0dbf10cfcb760 0.0s done
+#8 CACHED
+
+#9 [internal] load build context
+#9 transferring context: 703B done
+#9 DONE 0.0s
+
+#10 [stage-0 3/7] RUN docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd
+#10 2.173 Configuring for:
+#10 2.173 PHP Api Version:         20220829
+#10 2.173 Zend Module Api No:      20220829
+#10 2.173 Zend Extension Api No:   420220829
+#10 3.295 checking for grep that handles long lines and -e... /usr/bin/grep
+#10 3.297 checking for egrep... /usr/bin/grep -E
+#10 3.300 checking for a sed that does not truncate output... /usr/bin/sed
+#10 3.348 checking for pkg-config... /usr/bin/pkg-config
+#10 3.348 checking pkg-config is at least version 0.9.0... yes
+#10 3.350 checking for cc... cc
+#10 3.392 checking whether the C compiler works... yes
+#10 3.445 checking for C compiler default output file name... a.out
+#10 3.447 checking for suffix of executables... 
+#10 3.497 checking whether we are cross compiling... no
+#10 3.554 checking for suffix of object files... o
+#10 3.582 checking whether the compiler supports GNU C... yes
+#10 3.608 checking whether cc accepts -g... yes
+#10 3.634 checking for cc option to enable C11 features... none needed
+#10 3.695 checking how to run the C preprocessor... cc -E
+#10 3.767 checking for egrep -e... (cached) /usr/bin/grep -E
+#10 3.767 checking for icc... no
+#10 3.782 checking for suncc... no
+#10 3.796 checking for system library directory... lib
+#10 3.796 checking if compiler supports -Wl,-rpath,... yes
+#10 3.855 checking build system type... x86_64-pc-linux-gnu
+#10 3.862 checking host system type... x86_64-pc-linux-gnu
+#10 3.862 checking target system type... x86_64-pc-linux-gnu
+#10 3.920 checking for PHP prefix... /usr/local
+#10 3.920 checking for PHP includes... -I/usr/local/include/php -I/usr/local/include/php/main -I/usr/local/include/php/TSRM -I/usr/local/include/php/Zend -I/usr/local/include/php/ext -I/usr/local/include/php/ext/date/lib
+#10 3.921 checking for PHP extension directory... /usr/local/lib/php/extensions/no-debug-non-zts-20220829
+#10 3.921 checking for PHP installed headers prefix... /usr/local/include/php
+#10 3.921 checking if debug is enabled... no
+#10 3.946 checking if zts is enabled... no
+#10 3.970 checking for gawk... no
+#10 3.971 checking for nawk... nawk
+#10 3.971 checking if nawk is broken... no
+#10 3.973 checking for GD support... yes, shared
+#10 3.973 checking for external libgd... no
+#10 3.973 checking for libavif... no
+#10 3.973 checking for libwebp... no
+#10 3.973 checking for libjpeg... yes
+#10 3.974 checking for libXpm... no
+#10 3.974 checking for FreeType 2... yes
+#10 3.974 checking whether to enable JIS-mapped Japanese font support in GD... no
+#10 3.979 checking for fabsf... no
+#10 4.041 checking for floorf... no
+#10 4.103 checking for zlib... no
+#10 4.113 configure: error: Package requirements (zlib) were not met:
+#10 4.113 
+#10 4.113 Package 'zlib', required by 'virtual:world', not found
+#10 4.113 
+#10 4.113 Consider adjusting the PKG_CONFIG_PATH environment variable if you
+#10 4.113 installed software in a non-standard prefix.
+#10 4.113 
+#10 4.113 Alternatively, you may set the environment variables ZLIB_CFLAGS
+#10 4.113 and ZLIB_LIBS to avoid the need to call pkg-config.
+#10 4.113 See the pkg-config man page for more details.
+#10 ERROR: process "/bin/sh -c docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd" did not complete successfully: exit code: 1
+------
+ > [stage-0 3/7] RUN docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd:
+4.113 configure: error: Package requirements (zlib) were not met:
+4.113 
+4.113 Package 'zlib', required by 'virtual:world', not found
+4.113 
+4.113 Consider adjusting the PKG_CONFIG_PATH environment variable if you
+4.113 installed software in a non-standard prefix.
+4.113 
+4.113 Alternatively, you may set the environment variables ZLIB_CFLAGS
+4.113 and ZLIB_LIBS to avoid the need to call pkg-config.
+4.113 See the pkg-config man page for more details.
+------
+Dockerfile:10
+
+--------------------
+
+   8 |     
+
+   9 |     # Configure GD extension (required by phpoffice/phpspreadsheet)  
+
+  10 | >>> RUN docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd
+
+  11 |     
+
+  12 |     # PDO MySQL is already built into PHP 8.2-fpm image  
+
+--------------------
+
+failed to solve: process "/bin/sh -c docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install gd" did not complete successfully: exit code: 1
+

@@ -1,0 +1,6 @@
+Customer_ID,First_Name,Last_Name,Email,Phone,City,Country,Registration_Date,Lifetime_Value
+2001,"Lisa","Anderson","lisa.anderson@email.com","+1-555-0101",New York,USA,2019-01-15,15420.50
+2002,"Robert","Martinez","robert.martinez@email.com","+1-555-0102",Los Angeles,USA,2020-03-22,8750.00
+2003,"Jennifer","Lee","jennifer.lee@email.com","+44-20-7946-0958",London,UK,2018-07-10,22100.75
+2004,"William","Taylor","william.taylor@email.com","+61-2-9374-4046",Sydney,Australia,2021-11-05,5340.25
+2005,"Maria","Garcia","maria.garcia@email.com","+34-91-123-4567",Madrid,Spain,2022-02-18,9875.80

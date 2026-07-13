@@ -1,0 +1,150 @@
+/* Glassmorphism Styles */
+.glass-panel {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+}
+
+.glass-card {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+}
+
+/* Smooth transitions for glass effects */
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* Glass navbar link styling */
+.nav-link.glass {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
+}
+
+.nav-link.glass:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.nav-link.glass.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Glass alert styling */
+.glass-alert {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 4px solid;
+  border-radius: 10px;
+}
+
+.alert-info.glass-alert { border-color: #667eea !important; }
+.alert-success.glass-alert { border-color: #28a745 !important; }
+.alert-warning.glass-alert { border-color: #ffc107 !important; }
+.alert-danger.glass-alert { border-color: #dc3545 !important; }
+
+/* Button glass effects */
+.btn-glass {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-primary-glass {
+  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-glass:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Glass table styling */
+.table-glass {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.table-glass thead th {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(15px);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Glass input styling */
+.form-control.glass-input {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.form-control.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-control.glass-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  color: white;
+}
+
+/* Glass dropdown styling */
+.dropdown-menu.glass-dropdown {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dropdown-item.glass-dropdown-item {
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.dropdown-item.glass-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glass badge styling */
+.badge-glass {
+  backdrop-filter: blur(10px);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Loading spinner glass */
+.spinner-glass {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #667eea;
+}
+
+/* Glass modal/backdrop */
+.modal-backdrop.glass-backdrop {
+  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.5);
+}

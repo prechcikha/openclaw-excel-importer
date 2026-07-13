@@ -1,0 +1,6 @@
+Order_ID,Customer_ID,Product_Name,Quantity,Unit_Price,Total_Amount,Order_Date,Payment_Status,Shipping_Address
+3001,2001,"Laptop Pro 15",1,1299.99,1299.99,2024-01-15,Paid,"123 Main St, New York, NY 10001"
+3002,2002,"Wireless Mouse",2,49.99,99.98,2024-01-16,Pending,"456 Oak Ave, Los Angeles, CA 90001"
+3003,2003,"Mechanical Keyboard",1,199.99,199.99,2024-01-17,Shipped,"789 High St, London, SW1A 1AA"
+3004,2004,"Monitor 27-inch",1,599.99,599.99,2024-01-18,Paid,"101 George St, Sydney, NSW 2000"
+3005,2005,"USB-C Hub",3,79.99,239.97,2024-01-19,Refunded,"Calle Mayor 1, Madrid, 28013"
