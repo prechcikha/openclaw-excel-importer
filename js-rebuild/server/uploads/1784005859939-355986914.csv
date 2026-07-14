@@ -1,0 +1,6 @@
+Employee_ID,Full_Name,Email,Department,Position,Hire_Date,Salary,Status
+1001,"John Smith","john.smith@company.com",Engineering,Software Engineer,2020-03-15,75000,Active
+1002,"Sarah Johnson","sarah.johnson@company.com",Marketing,Marketing Manager,2019-06-22,85000,Active
+1003,"Michael Brown","michael.brown@company.com",Sales,Sales Representative,2021-01-10,65000,Active
+1004,"Emily Davis","emily.davis@company.com",HR,HR Specialist,2022-08-03,55000,Active
+1005,"David Wilson","david.wilson@company.com",Engineering,Senior Developer,2018-11-20,95000,Active

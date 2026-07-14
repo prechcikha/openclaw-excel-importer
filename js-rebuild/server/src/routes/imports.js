@@ -99,8 +99,8 @@ async function getDBService() {
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadDir = './uploads';
-        if (!path.existsSync(uploadDir)) {
-            path.mkdirSync(uploadDir, { recursive: true });
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },

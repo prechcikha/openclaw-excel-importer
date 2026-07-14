@@ -536,6 +536,8 @@ class MockDBService extends DBService {
                 created_at: new Date().toISOString()
             }
         ];
+        this.imports = [];
+        this.mappings = [];
     }
 
     async getConnections() { return this.connections; }
@@ -571,6 +573,112 @@ class MockDBService extends DBService {
     async testConnection(host, port, database, username, password) {
         // Mock successful connection test
         return { success: true, latency_ms: Math.floor(Math.random() * 50) + 10 };
+    }
+
+    // ========== Import Methods (Mock Implementation) ==========
+    
+    async saveImportMetadata(data) {
+        const importRecord = {
+            id: Date.now().toString(),
+            connection_id: data.connection_id,
+            file_name: data.file_name || 'unknown.xlsx',
+            file_size: data.file_size || 0,
+            columns_count: data.columns_count || 0,
+            rows_count: data.rows_count || 0,
+            upload_date: new Date(),
+            status: 'ready',
+            created_at: new Date()
+        };
+        this.imports.push(importRecord);
+        return importRecord;
+    }
+
+    async getImportById(importId) {
+        const importRec = this.imports.find(i => i.id === importId);
+        if (!importRec) return null;
+        
+        // Get mapping for this import
+        let mapping = null;
+        try {
+            mapping = await this.getMappingForImport(importId);
+        } catch(e) {}
+        
+        return { ...importRec, mapping };
+    }
+
+    async getImportHistory(params = {}) {
+        const { limit = 10, offset = 0, status } = params;
+        let filtered = this.imports;
+        if (status) {
+            filtered = filtered.filter(i => i.status === status);
+        }
+        return filtered.slice(offset, offset + parseInt(limit));
+    }
+
+    async deleteImport(importId) {
+        const index = this.imports.findIndex(i => i.id === importId);
+        if (index >= 0) {
+            this.imports.splice(index, 1);
+            // Also delete associated mappings
+            this.mappings = this.mappings.filter(m => m.import_id !== importId);
+            return true;
+        }
+        throw new Error('Import not found');
+    }
+
+    async saveImportMapping(data) {
+        const mappingRecord = {
+            id: Date.now(),
+            import_id: data.import_id,
+            mappings: data.mappings,
+            created_at: new Date()
+        };
+        this.mappings.push(mappingRecord);
+        return { mapping_count: Object.keys(data.mappings).length, import_id: data.import_id };
+    }
+
+    async getMappingForImport(importId) {
+        const mappingRec = this.mappings.find(m => m.import_id === importId);
+        if (!mappingRec) return null;
+        
+        // Convert mappings object to the format expected by routes
+        const mappingsObj = {};
+        for (const [sourceColumn, targetField] of Object.entries(mappingRec.mappings)) {
+            mappingsObj[sourceColumn] = {
+                field: targetField.field || targetField,
+                transform: null
+            };
+        }
+        
+        return { import_id: importId, mappings: mappingsObj };
+    }
+
+    async executeImport(config) {
+        // Mock successful import
+        const { rows_count, import_id } = config;
+        await new Promise(resolve => setTimeout(resolve, 100)); // Simulate processing time
+        
+        return {
+            records_imported: parseInt(rows_count) || 0,
+            records_failed: 0,
+            duration_ms: Math.floor(Math.random() * 500) + 200,
+            batches: Math.ceil((parseInt(rows_count) || 0) / 100)
+        };
+    }
+
+    async updateImportStatus(importId, status, details = null) {
+        const importRec = this.imports.find(i => i.id === importId);
+        if (importRec) {
+            importRec.status = status;
+            if (details) {
+                importRec.records_imported = details.records_imported || 0;
+                importRec.records_failed = details.records_failed || 0;
+                importRec.duration_ms = details.duration_ms || 0;
+                importRec.error_message = details.error_message || null;
+                importRec.updated_at = new Date();
+            }
+        }
+        return true;
     }
 }
 
